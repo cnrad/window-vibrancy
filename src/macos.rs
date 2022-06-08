@@ -72,7 +72,11 @@ mod internal {
   use crate::Error;
 
   #[allow(deprecated)]
-  pub fn apply_vibrancy(window: id, appearance: NSVisualEffectMaterial) -> Result<(), Error> {
+  pub fn apply_vibrancy(
+    window: id,
+    appearance: NSVisualEffectMaterial,
+    radius: f64,
+  ) -> Result<(), Error> {
     unsafe {
       if NSAppKitVersionNumber < NSAppKitVersionNumber10_10 {
         eprintln!("\"NSVisualEffectView\" is only available on macOS 10.10 or newer");
@@ -88,6 +92,7 @@ mod internal {
       }
 
       let mut m = appearance;
+      let r = radius;
       if appearance as u32 > 9 && NSAppKitVersionNumber < NSAppKitVersionNumber10_14 {
         m = NSVisualEffectMaterial::AppearanceBased;
       } else if appearance as u32 > 4 && NSAppKitVersionNumber < NSAppKitVersionNumber10_11 {
@@ -101,6 +106,7 @@ mod internal {
       blurred_view.autorelease();
 
       blurred_view.setMaterial_(m);
+      blurred_view.setCornerRadius_(r);
       blurred_view.setBlendingMode_(NSVisualEffectBlendingMode::BehindWindow);
       blurred_view.setState_(NSVisualEffectState::FollowsWindowActiveState);
       NSVisualEffectView::setAutoresizingMask_(
@@ -162,6 +168,7 @@ mod internal {
     unsafe fn setMaterial_(self, material: NSVisualEffectMaterial);
     unsafe fn setState_(self, state: NSVisualEffectState);
     unsafe fn setBlendingMode_(self, mode: NSVisualEffectBlendingMode);
+    unsafe fn setCornerRadius_(self, radius: f64);
   }
 
   #[allow(non_snake_case)]
@@ -222,6 +229,10 @@ mod internal {
 
     unsafe fn setBlendingMode_(self, mode: NSVisualEffectBlendingMode) {
       msg_send![self, setBlendingMode: mode]
+    }
+    
+    unsafe fn setCornerRadius_(self, radius: f64) {
+      msg_send![self, setCornerRadius: radius]
     }
   }
 }
